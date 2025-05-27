@@ -1,7 +1,7 @@
 #include "usb.h"
 #include "usb_stm32f103x6.h"
 
-extern struct usb_endpoint endpoint_list[4];
+extern struct usb_endpoint endpoint_list[5];
 
 void usb_init()
 {
@@ -31,13 +31,22 @@ void usb_it_reset()
 
     USB->EP1R = USB_EP_INTERRUPT | USB_EP_TX_NAK | 1;
     USB_EP_BUFF_DESC[1].rx_count = (1UL<<10) | 0x8000;
-    USB_EP_BUFF_DESC[1].rx_addr = (USB_EP_BUFF_DESC[0].tx_addr+64);
-    USB_EP_BUFF_DESC[1].tx_addr = (USB_EP_BUFF_DESC[1].rx_addr+64);
+    // USB_EP_BUFF_DESC[1].rx_addr = (USB_EP_BUFF_DESC[0].tx_addr+64);
+    USB_EP_BUFF_DESC[1].tx_addr = (USB_EP_BUFF_DESC[0].tx_addr+64);
 
-    USB->EP2R = USB_EP2R_EP_TYPE | USB_EP2R_STAT_RX | USB_EP2R_STAT_TX | 2;
+    USB->EP2R = USB_EP_INTERRUPT | USB_EP_TX_NAK | 2;
     USB_EP_BUFF_DESC[2].rx_count = (1UL<<10) | 0x8000;
-    USB_EP_BUFF_DESC[2].rx_addr = (USB_EP_BUFF_DESC[1].tx_addr+64);
-    USB_EP_BUFF_DESC[2].tx_addr = (USB_EP_BUFF_DESC[2].rx_addr+64);
+    USB_EP_BUFF_DESC[2].tx_addr = (USB_EP_BUFF_DESC[1].tx_addr+8);
+
+    USB->EP3R = USB_EP_BULK | USB_EP2R_STAT_RX | 3;
+    USB_EP_BUFF_DESC[3].rx_count = (1UL<<10) | 0x8000;
+    USB_EP_BUFF_DESC[3].rx_addr = (USB_EP_BUFF_DESC[2].tx_addr+64);
+    USB_EP_BUFF_DESC[3].tx_addr = (USB_EP_BUFF_DESC[3].rx_addr+64);
+
+    USB->EP4R = USB_EP_BULK | USB_EP_TX_NAK | 4;
+    USB_EP_BUFF_DESC[4].rx_count = (1UL<<10) | 0x8000;
+    USB_EP_BUFF_DESC[4].rx_addr = (USB_EP_BUFF_DESC[3].tx_addr+64);
+    USB_EP_BUFF_DESC[4].tx_addr = (USB_EP_BUFF_DESC[4].rx_addr+64);
 }
 
 void usb_it_ct()
