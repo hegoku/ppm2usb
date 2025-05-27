@@ -38,6 +38,13 @@ void usb_it_reset()
     USB_EP_BUFF_DESC[2].rx_count = (1UL<<10) | 0x8000;
     USB_EP_BUFF_DESC[2].rx_addr = (USB_EP_BUFF_DESC[1].tx_addr+64);
     USB_EP_BUFF_DESC[2].tx_addr = (USB_EP_BUFF_DESC[2].rx_addr+64);
+
+    for (int i=0;i<4;i++) {
+        ring_buffer_clear(&endpoint_list[i].tx_buf);
+        endpoint_list[i].tx_remaining = 0;
+        endpoint_list[i].tx_buf.data = endpoint_list[i].tx_data;
+        endpoint_list[i].tx_buf.size = 256;
+    }
 }
 
 void usb_it_ct()
@@ -58,13 +65,18 @@ void usb_it_ct()
     }
 }
 
-void usb_send_endpoint_data(int id, unsigned char *buf, int size)
+void _usb_endpoint_send(int id)
 {
     if ((USB_EPnR(id) & USB_EP_TX_VALID) ==0) {
         return;
     }
+    if (endpoint_list[id].tx_remaining==0) return;
+    int size = 0;
+    unsigned char buf[64];
     unsigned short *send = USB_GET_EP_TX_ADDR(id);
     unsigned short *data = (unsigned short*)buf;
+
+    size = ring_buffer_pop(&endpoint_list[id].tx_buf, buf, 64);
     for (int i=0;i<(size/2);i++) {
         *send = data[i];
         send+=2;
@@ -75,6 +87,18 @@ void usb_send_endpoint_data(int id, unsigned char *buf, int size)
     }
     USB_EP_BUFF_DESC[id].tx_count = size;
     USB_EPnR(id) = (USB_EPnR(id) & USB_EPREG_MASK) | USB_EP_TX_STALL;
+
+    if (RING_BUFFER_IS_EMPTY(endpoint_list[id].tx_buf)) {
+        endpoint_list[id].tx_remaining = 0;
+    }
+}
+
+void usb_send_endpoint_data(int id, unsigned char *buf, int size)
+{
+    ring_buffer_clear(&endpoint_list[id].tx_buf);
+    ring_buffer_put(&endpoint_list[id].tx_buf, buf, size);
+    endpoint_list[id].tx_remaining = 1;
+    _usb_endpoint_send(id);
 }
 
 void usb_get_endpoint_data(int id, unsigned char *buf, int size)
@@ -86,4 +110,9 @@ void usb_get_endpoint_data(int id, unsigned char *buf, int size)
         data[i] = *read;
         read += 2;
     }
+}
+
+void use_send_data(int id, unsigned char *buf, int size)
+{
+
 }

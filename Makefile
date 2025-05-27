@@ -52,7 +52,8 @@ Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_flash_ex.c \
 Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_exti.c \
 Core/Src/system_stm32f1xx.c \
 Core/Lib/usb_stm32f103x6.c \
-Core/Src/usb.c
+Core/Src/usb.c \
+Core/Lib/ring_buffer.c
 
 # ASM sources
 ASM_SOURCES =  \

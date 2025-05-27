@@ -33,7 +33,7 @@ void ep0_rx(unsigned short id)
                 usb_send_endpoint_data(0, usb_device_desc, sizeof(usb_device_desc));
                 break;
             case USB_DESCRIPTOR_TYPE_CONFIG: //get config desc
-                if (buf->wlength == 0xff) {
+                if (buf->wlength > sizeof(usb_config_desc)) {
                     usb_send_endpoint_data(0, usb_config_desc, sizeof(usb_config_desc));
                 } else {
                     usb_send_endpoint_data(0, usb_config_desc, buf->wlength);
@@ -41,13 +41,13 @@ void ep0_rx(unsigned short id)
                 break;
             case USB_DESCRIPTOR_TYPE_STRING: //get string desc
                 if (buf->wValue[0]==0) {
-                    if (buf->wlength == 0xff) {
+                    if (buf->wlength > sizeof(usb_string_desc_id)) {
                         usb_send_endpoint_data(0, usb_string_desc_id, sizeof(usb_string_desc_id));
                     } else {
                         usb_send_endpoint_data(0, usb_string_desc_id, buf->wlength);
                     }
                 } else {
-                    if (buf->wlength == 0xff) {
+                    if (buf->wlength > sizeof(usb_string_desc)) {
                         usb_send_endpoint_data(0, usb_string_desc, sizeof(usb_string_desc));
                     } else {
                         usb_send_endpoint_data(0, usb_string_desc, buf->wlength);
@@ -86,6 +86,7 @@ void ep0_tx(unsigned short id)
         USB->DADDR |= dev_address;
         is_get_address = 1;
     }
+    _usb_endpoint_send(id);
 }
 
 void ep1_ppm_tx(unsigned short id)
