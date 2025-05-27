@@ -57,7 +57,8 @@ static unsigned char usb_config_desc[] = {
 //配置描述符
   0x09, //配置描述符长度 9B
   USB_DESCRIPTOR_TYPE_CONFIG, //类型为配置
-  0x29, 0x00, //整个配置描述符集总长度
+  // 0x29, 0x00, //整个配置描述符集总长度
+  0x5C, 0x00,  //整个配置描述符集总长度 99Bytes
   0x1, //接口数量
   0x1, //被SET_CONFIGURATION请求用作参数来选定
   0x4, //描述该配置的字符串描述符索引
@@ -88,13 +89,66 @@ static unsigned char usb_config_desc[] = {
   0x3, //中断传输
   0x40, 0x00, //端点最大包长度
   0x14, //主机查询间隔 20ms
-//endpoint desc out
-  // 0x7, //描述符长度
-  // USB_DESCRIPTOR_TYPE_ENDPOINT, //类型为端点
-  // 0x2, //端点方向和地址
-  // 0x3, //中断传输
-  // 0x40, 0x00, //端点最大包长度
-  // 0x14 //主机查询间隔 20ms
+//接口描述符,CDC
+  0x09, //长度
+  USB_DESCRIPTOR_TYPE_INTERFACE, //类型为接口
+  0x1, //接口编号
+  0x0, //备用接口编号
+  0x1, //该接口endpoint数
+  0x2, //接口类型 CDC
+  0x2, //接口子类型 ACM
+  0x1, //协议代码 AT Commands (v2.5ter)
+  0x05, //字符串索引
+//CDC Header
+  0x05, //bFunctionLength
+  0x24, //bDescriptorType=CS_INTERFANCE
+  0x00, //bDescriptorSubtype=Header
+  0x10,  0x01, //bcdCDC = 1.10
+//CDC CAll Management Function DEscriptor
+  0x05,
+  0x24, 0x01, //Subtype=Call Management
+  0x00, //bmCapabilities (no call mgmt)
+  0x01, //bDataInterface=1
+//CDC ACM Functional Descriptor
+  0x4,
+  0x24, 0x2, //subtype = ACM
+  0x02, //bmCapabilities (device supprots Set_Comm_feature)
+//CDC Union Functional Descripor
+  0x05,
+  0x24, 0x06, //subtype=Union
+  0x00, //bMasterInterfance=0
+  0x01, //bSlaveInterface0 = 1(CDC Data interance)
+//CDC Notification Endpoint (Interrupt In)
+  0x7, //描述符长度
+  USB_DESCRIPTOR_TYPE_ENDPOINT, //类型为端点
+  0x82, //端点方向和地址
+  0x3, //中断传输
+  0x08, 0x00, //端点最大包长度
+  0xff, //主机查询间隔 255ms
+//interfance 2 CDC Data Class
+  0x09,
+  USB_DESCRIPTOR_TYPE_INTERFACE,
+  0x02, //接口编号
+  0x00,
+  0x02, //endpoint count
+  0x0A, //bInterfanceClass=Data
+  0x00,
+  0x00,
+  0x00,
+//CDC Data Out Endpoint (Bulk Out)
+  0x07,
+  USB_DESCRIPTOR_TYPE_ENDPOINT,
+  0x3, //端点方向和地址
+  0x02, //Bulk
+  0x40, 0x00,
+  0x00, //interval
+//CDC Data In Endpoint (Bulk In)
+  0x07,
+  USB_DESCRIPTOR_TYPE_ENDPOINT,
+  0x84, //端点方向和地址
+  0x02, //Bulk
+  0x40, 0x00,
+  0x00, //interval
 };
 
 static unsigned char usb_device_limited_desc[] = {
