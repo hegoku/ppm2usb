@@ -27,38 +27,41 @@ void ep0_rx(unsigned short id)
         usb_get_endpoint_data(0, endpoint_list[id].rx_buf, 8);
         struct usb_standard_request_pack *buf = (struct usb_standard_request_pack*)(endpoint_list[id].rx_buf);
 
-        if ((buf->bmRequest == (USB_BREQUEST_STANDARD | USB_BREQUEST_DEVICE_TO_HOST | USB_BREQUEST_TO_DEVICE)) && buf->bRequst == USB_BREQUEST_GET_DESC) {
-            switch (buf->wValue[1]) {
-            case USB_DESCRIPTOR_TYPE_DEVICE: //get device desc
-                usb_send_endpoint_data(0, usb_device_desc, sizeof(usb_device_desc));
-                break;
-            case USB_DESCRIPTOR_TYPE_CONFIG: //get config desc
-                if (buf->wlength > sizeof(usb_config_desc)) {
-                    usb_send_endpoint_data(0, usb_config_desc, sizeof(usb_config_desc));
-                } else {
-                    usb_send_endpoint_data(0, usb_config_desc, buf->wlength);
-                }
-                break;
-            case USB_DESCRIPTOR_TYPE_STRING: //get string desc
-                if (buf->wValue[0]==0) {
-                    if (buf->wlength > sizeof(usb_string_desc_id)) {
-                        usb_send_endpoint_data(0, usb_string_desc_id, sizeof(usb_string_desc_id));
+        if ((buf->bmRequest == (USB_BREQUEST_STANDARD | USB_BREQUEST_DEVICE_TO_HOST | USB_BREQUEST_TO_DEVICE))) {
+            if (buf->bRequst == USB_BREQUEST_GET_DESC) {
+                switch (buf->wValue[1]) {
+                case USB_DESCRIPTOR_TYPE_DEVICE: //get device desc
+                    usb_send_endpoint_data(0, usb_device_desc, sizeof(usb_device_desc));
+                    break;
+                case USB_DESCRIPTOR_TYPE_CONFIG: //get config desc
+                    if (buf->wlength > sizeof(usb_config_desc)) {
+                        usb_send_endpoint_data(0, usb_config_desc, sizeof(usb_config_desc));
                     } else {
-                        usb_send_endpoint_data(0, usb_string_desc_id, buf->wlength);
+                        usb_send_endpoint_data(0, usb_config_desc, buf->wlength);
                     }
-                } else {
-                    if (buf->wlength > sizeof(usb_string_desc)) {
-                        usb_send_endpoint_data(0, usb_string_desc, sizeof(usb_string_desc));
+                    break;
+                case USB_DESCRIPTOR_TYPE_STRING: //get string desc
+                    if (buf->wValue[0]==0) {
+                        if (buf->wlength > sizeof(usb_string_desc_id)) {
+                            usb_send_endpoint_data(0, usb_string_desc_id, sizeof(usb_string_desc_id));
+                        } else {
+                            usb_send_endpoint_data(0, usb_string_desc_id, buf->wlength);
+                        }
                     } else {
-                        usb_send_endpoint_data(0, usb_string_desc, buf->wlength);
+                        if (buf->wlength > sizeof(usb_string_desc)) {
+                            usb_send_endpoint_data(0, usb_string_desc, sizeof(usb_string_desc));
+                        } else {
+                            usb_send_endpoint_data(0, usb_string_desc, buf->wlength);
+                        }
                     }
+                    break;
+                case USB_DESCRIPTOR_TYPE_LIMITED: //get limited desc
+                    usb_send_endpoint_data(0, usb_device_limited_desc, sizeof(usb_device_limited_desc));
+                    break;
                 }
-                break;
-            case USB_DESCRIPTOR_TYPE_LIMITED: //get limited desc
-                usb_send_endpoint_data(0, usb_device_limited_desc, sizeof(usb_device_limited_desc));
-                break;
-            }
-            reg |= USB_EP0R_STAT_TX_0;
+            } else if (buf->bRequst == USB_BREQUEST_GET_STATUS) {
+                
+            }            
         }  else if (buf->bmRequest == (USB_BREQUEST_STANDARD | USB_BREQUEST_DEVICE_TO_HOST | USB_BREQUEST_TO_INTERFACE) && buf->bRequst == USB_BREQUEST_GET_DESC) {
             switch (buf->wValue[1]) {
             case USB_DESCRIPTOR_TYPE_HID_REPORT:
@@ -71,7 +74,6 @@ void ep0_rx(unsigned short id)
                 is_get_address = 1;
             } else if (buf->bRequst==USB_BREQUEST_SET_CONFIG) {
             }
-
             usb_send_endpoint_data(0, NULL, 0);
         } else if (buf->bmRequest == (USB_BREQUEST_CLASS | USB_BREQUEST_HOST_TO_DEVICE | USB_BREQUEST_TO_INTERFACE) && buf->bRequst==USB_BREQUEST_SET_IDLE) { //类限定请求,设置空速率
             usb_send_endpoint_data(0, NULL, 0);

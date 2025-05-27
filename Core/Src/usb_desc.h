@@ -11,8 +11,10 @@ static unsigned char usb_device_desc[] = {
   0, //设备子类代码
   0, //设备协议代码
   0x40, //endpoint0最大包长
-  0x96, 0x03, //厂商ID
-  0x15, 0x1, //产品ID
+  // 0x96, 0x03, //厂商ID
+  // 0x15, 0x1, //产品ID
+  0x83, 0x4, //厂商ID
+  0x43,0x57, //产品ID
   0x00, 0x01, //设备版本号 01.00
   0x01, //制造商字符串索引
   0x02, //产品字符串索引
@@ -58,12 +60,23 @@ static unsigned char usb_config_desc[] = {
   0x09, //配置描述符长度 9B
   USB_DESCRIPTOR_TYPE_CONFIG, //类型为配置
   // 0x29, 0x00, //整个配置描述符集总长度
-  0x5C, 0x00,  //整个配置描述符集总长度 99Bytes
-  0x1, //接口数量
+  0x6C, 0x00,
+  // 0x5C, 0x00,
+  0x3, //接口数量
   0x1, //被SET_CONFIGURATION请求用作参数来选定
   0x4, //描述该配置的字符串描述符索引
   0x80, //供电模式 总线供电
   0xFA, //最大功耗 以2mA为单位, 500mA
+//IAD HID
+  0x8,
+  USB_DESCRIPTOR_TYPE_INTERFACE_ASSOCIATION,
+  0x0, //bFirstInterface 接口描述符在总配置描述符中的第几个
+  0x1, //bInterfaceCount 接口描述符个数
+  0x3, //bFunctionClass 设备符中的DeviceClass
+  0x0, //bFunctionSubClass
+  0x0, //bInterfaceProtocol
+  0x0,
+
 //接口描述符
   0x09, //长度
   USB_DESCRIPTOR_TYPE_INTERFACE, //类型为接口
@@ -89,6 +102,15 @@ static unsigned char usb_config_desc[] = {
   0x3, //中断传输
   0x40, 0x00, //端点最大包长度
   0x14, //主机查询间隔 20ms
+//IAD CDC
+  0x8,
+  USB_DESCRIPTOR_TYPE_INTERFACE_ASSOCIATION,
+  0x1, //bFirstInterface 接口描述符在总配置描述符中的第几个
+  0x2, //bInterfaceCount 接口描述符个数
+  0x2, //bFunctionClass 设备符中的DeviceClass
+  0x2, //bFunctionSubClass
+  0x1, //bInterfaceProtocol
+  0x0,
 //接口描述符,CDC
   0x09, //长度
   USB_DESCRIPTOR_TYPE_INTERFACE, //类型为接口
@@ -116,8 +138,8 @@ static unsigned char usb_config_desc[] = {
 //CDC Union Functional Descripor
   0x05,
   0x24, 0x06, //subtype=Union
-  0x00, //bMasterInterfance=0
-  0x01, //bSlaveInterface0 = 1(CDC Data interance)
+  0x01, //bMasterInterfance=0
+  0x02, //bSlaveInterface0 = 1(CDC Data interance)
 //CDC Notification Endpoint (Interrupt In)
   0x7, //描述符长度
   USB_DESCRIPTOR_TYPE_ENDPOINT, //类型为端点
