@@ -47,6 +47,11 @@ struct usb_standard_request_pack {
     unsigned short wlength;
 }__attribute__((packed));
 
+struct usb_interface {
+	void (*class_request_handler)(struct usb_interface *interface, struct usb_standard_request_pack *buf);
+	void *priv;
+};
+
 void usb_init();
 
 void usb_send_endpoint_data(int id, unsigned char *buf, int size);

@@ -8,7 +8,7 @@ struct ring_buffer {
     unsigned int size;
 };
 
-#define DEFINE_RING_BUFFER(name, len) \
+#define RING_BUFFER_DEFINE(name, len) \
 	unsigned char name##_ring_buffer_data[len];	\
 	struct ring_buffer name = {	\
 		.data=name##_ring_buffer_data,	\
