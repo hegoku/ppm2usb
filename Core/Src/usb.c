@@ -131,7 +131,9 @@ void ep0_rx(unsigned short id)
             }
         }
     }
-    USB_EPnR(id) = (USB_EPnR(id) & USB_EPREG_MASK) | USB_EP_RX_STALL;
+    if (usb_setup_status==IDLE || usb_setup_status==DATA_OUT) {
+        USB_EPnR(id) = (USB_EPnR(id) & USB_EPREG_MASK) | USB_EP_RX_STALL;
+    }
 }
 
 void ep0_tx(unsigned short id)
@@ -139,7 +141,8 @@ void ep0_tx(unsigned short id)
     if (usb_setup_status==DATA_IN) {
         _usb_endpoint_send(id);
         if (endpoint_list[id].tx_remaining==0) {
-            usb_setup_status = IDLE;
+            usb_setup_status = STATUS_OUT;
+            USB_EPnR(id) = (USB_EPnR(id) & USB_EPREG_MASK) | USB_EP_RX_STALL;
         }
     } else if (usb_setup_status==STATUS_IN) {
         if (is_get_address) {
@@ -147,8 +150,8 @@ void ep0_tx(unsigned short id)
             is_get_address = 1;
         }
         usb_setup_status = IDLE;
+        USB_EPnR(id) = (USB_EPnR(id) & USB_EPREG_MASK) | USB_EP_RX_STALL;
     }
-   
 }
 
 void ep1_ppm_tx(unsigned short id)
