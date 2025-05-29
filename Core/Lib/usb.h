@@ -39,6 +39,14 @@
 
 #define USB_ENDPOINT_DESC_DIR_IN (1U <<7)
 
+enum USB_SETUP_STATUS {
+    IDLE,
+    DATA_IN,
+    DATA_OUT,
+    STATUS_IN,
+    STATUS_OUT
+};
+
 struct usb_standard_request_pack {
     unsigned char bmRequest;
     unsigned char bRequst;
@@ -48,7 +56,8 @@ struct usb_standard_request_pack {
 }__attribute__((packed));
 
 struct usb_interface {
-	void (*class_request_handler)(struct usb_interface *interface, struct usb_standard_request_pack *buf);
+	void (*class_request_handler_in)(struct usb_interface *interface, struct usb_standard_request_pack *buf);
+    void (*class_request_handler_out)(struct usb_interface *interface, struct usb_standard_request_pack *buf);
 	void *priv;
 };
 
@@ -56,5 +65,8 @@ void usb_init();
 
 void usb_send_endpoint_data(int id, unsigned char *buf, int size);
 void usb_get_endpoint_data(int id, unsigned char *buf, int size);
+
+extern enum USB_SETUP_STATUS usb_setup_status;
+extern void(*ep0_setup_out_handler)(unsigned char* data, int size);
 
 #endif
