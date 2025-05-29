@@ -12,7 +12,8 @@ struct usb_hid_interface_priv {
 
 #define USB_HID_INTERFACE_GET_PRIV(x) ((struct usb_hid_interface_priv*)((x)->priv))
 
-void usb_hid_interface_class_request(struct usb_interface *interface, struct usb_standard_request_pack *buf);
+void usb_hid_interface_class_request_in(struct usb_interface *interface, struct usb_standard_request_pack *buf);
+void usb_hid_interface_class_request_out(struct usb_interface *interface, struct usb_standard_request_pack *buf);
 
 #define USB_HID_INTERFACE_DEFINE(name, report, report_size) \
 	struct usb_hid_interface_priv name##_usb_hid_inter_priv = {	\
@@ -20,7 +21,8 @@ void usb_hid_interface_class_request(struct usb_interface *interface, struct usb
 		.report_descriptor_size = report_size	\
 	};	\
 	struct usb_interface name = {	\
-		.class_request_handler=usb_hid_interface_class_request,	\
+		.class_request_handler_in=usb_hid_interface_class_request_in,	\
+		.class_request_handler_out=usb_hid_interface_class_request_out,	\
 		.priv=&(name##_usb_hid_inter_priv)	\
 	}
 
