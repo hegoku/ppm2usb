@@ -1,3 +1,3 @@
+#include <stddef.h>
 #include "usb.h"
-
-enum USB_SETUP_STATUS usb_setup_status = IDLE;
+#include "usb_hid.h"

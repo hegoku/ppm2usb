@@ -24,7 +24,7 @@ void usb_init()
 void usb_it_reset()
 {
     USB->DADDR |= USB_DADDR_EF;
-    USB->EP0R = USB_EP_CONTROL | USB_EP_RX_VALID | USB_EP_TX_NAK | USB_EP_KIND;
+    USB->EP0R = USB_EP_CONTROL | USB_EP_RX_VALID | USB_EP_TX_NAK;
     USB_EP_BUFF_DESC[0].rx_count = (1UL<<10) | 0x8000;
     USB_EP_BUFF_DESC[0].rx_addr = 0x20;
     USB_EP_BUFF_DESC[0].tx_addr = (0x20+64);
@@ -95,7 +95,7 @@ void _usb_endpoint_send(int id)
         *send = (unsigned int)(buf[size-1]);
     }
     USB_EP_BUFF_DESC[id].tx_count = size;
-    USB_EPnR(id) = (USB_EPnR(id) & USB_EPREG_MASK) | USB_EP_TX_STALL;
+    usb_set_endpoint_tx_valid(id);
 
     if (RING_BUFFER_IS_EMPTY(endpoint_list[id].tx_buf)) {
         endpoint_list[id].tx_remaining = 0;
@@ -121,7 +121,12 @@ void usb_get_endpoint_data(int id, unsigned char *buf, int size)
     }
 }
 
-void use_send_data(int id, unsigned char *buf, int size)
+inline void usb_set_endpoint_tx_valid(int id)
 {
+    USB_EPnR(id) = (USB_EPnR(id) & USB_EPREG_MASK) | USB_EP_TX_STALL;
+}
 
+inline void usb_set_endpoint_rx_valid(int id)
+{
+    USB_EPnR(id) = (USB_EPnR(id) & USB_EPREG_MASK) | USB_EP_RX_STALL;
 }
