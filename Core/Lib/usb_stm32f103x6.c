@@ -26,25 +26,25 @@ void usb_it_reset()
     USB->DADDR |= USB_DADDR_EF;
     USB->EP0R = USB_EP_CONTROL | USB_EP_RX_VALID | USB_EP_TX_NAK;
     USB_EP_BUFF_DESC[0].rx_count = (1UL<<10) | 0x8000;
-    USB_EP_BUFF_DESC[0].rx_addr = 0x20;
+    USB_EP_BUFF_DESC[0].rx_addr = 0x28;
     USB_EP_BUFF_DESC[0].tx_addr = (0x20+64);
 
     USB->EP1R = USB_EP_INTERRUPT | USB_EP_TX_NAK | 1;
-    USB_EP_BUFF_DESC[1].rx_count = (1UL<<10) | 0x8000;
+    // USB_EP_BUFF_DESC[1].rx_count = (1UL<<10) | 0x8000;
     // USB_EP_BUFF_DESC[1].rx_addr = (USB_EP_BUFF_DESC[0].tx_addr+64);
     USB_EP_BUFF_DESC[1].tx_addr = (USB_EP_BUFF_DESC[0].tx_addr+64);
 
     USB->EP2R = USB_EP_INTERRUPT | USB_EP_TX_NAK | 2;
-    USB_EP_BUFF_DESC[2].rx_count = (1UL<<10) | 0x8000;
+    // USB_EP_BUFF_DESC[2].rx_count = (1UL<<10) | 0x8000;
     USB_EP_BUFF_DESC[2].tx_addr = (USB_EP_BUFF_DESC[1].tx_addr+8);
 
     USB->EP3R = USB_EP_BULK | USB_EP2R_STAT_RX | 3;
     USB_EP_BUFF_DESC[3].rx_count = (1UL<<10) | 0x8000;
-    USB_EP_BUFF_DESC[3].rx_addr = (USB_EP_BUFF_DESC[2].tx_addr+64);
+    USB_EP_BUFF_DESC[3].rx_addr = (USB_EP_BUFF_DESC[2].tx_addr+16);
     USB_EP_BUFF_DESC[3].tx_addr = (USB_EP_BUFF_DESC[3].rx_addr+64);
 
     USB->EP4R = USB_EP_BULK | USB_EP_TX_NAK | 4;
-    USB_EP_BUFF_DESC[4].rx_count = (1UL<<10) | 0x8000;
+    // USB_EP_BUFF_DESC[4].rx_count = (1UL<<10) | 0x8000;
     USB_EP_BUFF_DESC[4].rx_addr = (USB_EP_BUFF_DESC[3].tx_addr+64);
     USB_EP_BUFF_DESC[4].tx_addr = (USB_EP_BUFF_DESC[4].rx_addr+64);
 
@@ -79,7 +79,7 @@ void _usb_endpoint_send(int id)
     if ((USB_EPnR(id) & USB_EP_TX_VALID) ==0) {
         return;
     }
-    if (endpoint_list[id].tx_remaining==0) return;
+    if (RING_BUFFER_IS_EMPTY(endpoint_list[id].tx_buf) && endpoint_list[id].tx_remaining==0) return;
     int size = 0;
     unsigned char buf[64];
     unsigned short *send = USB_GET_EP_TX_ADDR(id);
@@ -97,8 +97,8 @@ void _usb_endpoint_send(int id)
     USB_EP_BUFF_DESC[id].tx_count = size;
     usb_set_endpoint_tx_valid(id);
 
-    if (RING_BUFFER_IS_EMPTY(endpoint_list[id].tx_buf)) {
-        endpoint_list[id].tx_remaining = 0;
+    if (size==0) {
+        endpoint_list[id].tx_remaining=0;
     }
 }
 
@@ -106,7 +106,7 @@ void usb_send_endpoint_data(int id, unsigned char *buf, int size)
 {
     ring_buffer_clear(&endpoint_list[id].tx_buf);
     ring_buffer_put(&endpoint_list[id].tx_buf, buf, size);
-    endpoint_list[id].tx_remaining = 1;
+    endpoint_list[id].tx_remaining = size%64==0?1:0;
     _usb_endpoint_send(id);
 }
 

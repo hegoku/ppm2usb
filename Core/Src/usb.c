@@ -128,16 +128,12 @@ void ep0_rx(unsigned short id)
         }
     } else {
         if (usb_instance.setup_stage == STATUS_OUT) {
-            USB_EPnR(id) = USB_EPnR(id) & USB_EPKIND_MASK;
             usb_instance.setup_stage = IDLE;
         } else if (usb_instance.setup_stage == DATA_OUT) {
             if (usb_instance.ep0_setup_out_handler) {
                 usb_instance.ep0_setup_out_handler(endpoint_list[id].rx_buf, receive_size);
             }
         }
-    }
-    if (usb_instance.setup_stage == STATUS_OUT) {
-        USB_EPnR(id) = (USB_EPnR(id) & USB_EPKIND_MASK) | USB_EP_KIND;
     }
     if (usb_instance.setup_stage==IDLE || usb_instance.setup_stage==DATA_OUT) {
         usb_set_endpoint_rx_valid(id);
@@ -170,7 +166,7 @@ void ep3_vcp_rx(unsigned short id)
 {
     unsigned int receive_size = USB_EP_BUFF_DESC[id].rx_count & 0x1FF;
     usb_get_endpoint_data(id, endpoint_list[id].rx_buf, receive_size);
-    usb_send_endpoint_data(id, endpoint_list[id].rx_buf, receive_size);
+    usb_send_endpoint_data(4, endpoint_list[id].rx_buf, receive_size);
     USB_EPnR(id) = (USB_EPnR(id) & USB_EPREG_MASK) | USB_EP_RX_STALL;
 }
 
