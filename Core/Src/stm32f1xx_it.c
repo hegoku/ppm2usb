@@ -345,4 +345,11 @@ void USBWakeUp_IRQHandler(void)
   USB->ISTR =  USB->ISTR & ~USB_ISTR_WKUP;
   USB->CNTR = USB->CNTR & ~USB_CNTR_FSUSP;
 }
+
+void TIM2_IRQHandler(void)
+{
+  // unsigned short cycle = TIM2->CCR1;
+  // unsigned short width = TIM2->CCR2;
+  HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
+}
 /* USER CODE END 1 */

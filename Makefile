@@ -53,7 +53,8 @@ Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_exti.c \
 Core/Src/system_stm32f1xx.c \
 Core/Lib/usb_setup.c Core/Lib/usb_stm32f103x6.c Core/Lib/usb_cdc.c Core/Lib/usb_hid.c \
 Core/Src/usb.c \
-Core/Lib/ring_buffer.c
+Core/Lib/ring_buffer.c \
+Core/Lib/tim.c
 
 # ASM sources
 ASM_SOURCES =  \

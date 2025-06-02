@@ -22,6 +22,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "usb.h"
+#include "tim.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -86,6 +87,9 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
+  RCC->APB1ENR |= RCC_APB1ENR_TIM2EN;
+  __NVIC_EnableIRQ(TIM2_IRQn);
+  tim_init_timer(TIM2, 10000, 0, 7200);
   /* USER CODE BEGIN 2 */
   usb_init();
   /* USER CODE END 2 */
